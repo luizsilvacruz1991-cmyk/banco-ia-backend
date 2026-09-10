@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Controle Administrador - Banco IA</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --accent-blue: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #334155;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+        }
+
+        .user-card {
+            background-color: var(--bg-card);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .user-email { font-size: 16px; font-weight: 600; color: #fff; display: block; }
+        .user-meta { font-size: 13px; color: var(--text-muted); display: block; margin-top: 4px; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .status-ATIVO { background: #166534; color: #4ade80; }
+        .status-BLOQUEADO { background: #991b1b; color: #fca5a5; }
+        .status-PENDENTE { background: #854d0e; color: #fef08a; }
+
+        .menu-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 12px;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            width: 220px;
+        }
+
+        .dropdown-menu.show { display: block; }
+
+        .dropdown-item {
+            width: 100%;
+            padding: 10px 14px;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            text-align: left;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover { background-color: #1e293b; }
+        .dropdown-item.danger { color: var(--danger); }
+        .dropdown-item.success { color: var(--success); }
+
+        .form-box {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            max-width: 380px;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #fff;
+            border-radius: 4px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-blue);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .error-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .error-table th, .error-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+            font-size: 13px;
+        }
+
+        .error-table th { background-color: #0f172a; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+    <div class="header-title">🛡️ Central de Controle (Admin) - Banco IA</div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="trocarAba('aba-usuarios', event)">👥 Usuários & Contas</button>
+        <button class="tab-btn" onclick="trocarAba('aba-testesar', event)">📱 Simulador do App</button>
+        <button class="tab-btn" onclick="trocarAba('aba-erros', event)">⚠️ Log de Erros do App</button>
+    </div>
+
+    <!-- ABA 1: GERENCIAMENTO DE USUÁRIOS -->
+    <div id="aba-usuarios" class="tab-content active">
+        <div class="user-grid" id="lista-usuarios"></div>
+    </div>
+
+    <!-- ABA 2: SIMULADOR DE TESTES DO APP -->
+    <div id="aba-testesar" class="tab-content">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div class="form-box">
+                <h3>1. Simular Cadastro do App</h3>
+                <input type="text" id="regNome" placeholder="Nome Completo">
+                <input type="email" id="regEmail" placeholder="E-mail">
+                <input type="password" id="regSenha" placeholder="Senha">
+                <button class="btn-submit" onclick="cadastrar()">Cadastrar via App</button>
+            </div>
+
+            <div class="form-box">
+                <h3>2. Simular Login do App</h3>
+                <input type="email" id="loginEmail" placeholder="E-mail">
+                <input type="password" id="loginSenha" placeholder="Senha">
+                <button class="btn-submit" onclick="fazerLogin()">Testar Entrar no App</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABA 3: REGISTRO DE ERROS -->
+    <div id="aba-erros" class="tab-content">
+        <table class="error-table">
+            <thead>
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Origem</th>
+                    <th>Mensagem do Erro</th>
+                    <th>Detalhamento Técnico</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-erros"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+
+        function trocarAba(idAba, event) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(idAba).classList.add('active');
+
+            if (idAba === 'aba-usuarios') carregarUsuarios();
+            if (idAba === 'aba-erros') carregarErros();
+        }
+
+        async function carregarUsuarios() {
+            try {
+                const res = await fetch(`${API}/admin/usuarios`);
+                const usuarios = await res.json();
+                const grid = document.getElementById('lista-usuarios');
+                grid.innerHTML = '';
+
+                if (usuarios.length === 0) {
+                    grid.innerHTML = '<p style="color: var(--text-muted);">Nenhum usuário cadastrado via App ainda.</p>';
+                    return;
+                }
+
+                usuarios.forEach(u => {
+                    grid.innerHTML += `
+                        <div class="user-card">
+                            <button class="menu-btn" onclick="toggleMenu('${u.id}', event)">⋮</button>
+                            
+                            <div class="dropdown-menu" id="menu-${u.id}">
+                                <button class="dropdown-item success" onclick="alterarAcesso('${u.id}', 'ATIVO')">
+                                    ✓ Liberar Acesso no App
+                                </button>
+                                <button class="dropdown-item danger" onclick="alterarAcesso('${u.id}', 'BLOQUEADO')">
+                                    🚫 Bloquear Acesso no App
+                                </button>
+                            </div>
+
+                            <div>
+                                <span class="user-email">${u.email}</span>
+                                <span class="user-meta">Nome: ${u.nome}</span>
+                                <span class="status-badge status-${u.status}">${u.status}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error("Erro ao carregar usuários", err);
+            }
+        }
+
+        function toggleMenu(id, event) {
+            event.stopPropagation();
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+            const menu = document.getElementById(`menu-${id}`);
+            if (menu) menu.classList.toggle('show');
+        }
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        });
+
+        async function alterarAcesso(id, novoStatus) {
+            const motivo = prompt(`Digite o motivo para alterar o status para ${novoStatus}:`);
+            if (motivo === null) return;
+
+            try {
+                const res = await fetch(`${API}/admin/usuarios/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ novoStatus, motivo })
+                });
+
+                const data = await res.json();
+                alert(data.mensagem || data.erro);
+                carregarUsuarios();
+            } catch (err) {
+                alert("Erro ao alterar o status.");
+            }
+        }
+
+        async function carregarErros() {
+            try {
+                const res = await fetch(`${API}/admin/erros`);
+                const erros = await res.json();
+                const tbody = document.getElementById('tabela-erros');
+                tbody.innerHTML = '';
+
+                if (erros.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--success);">Nenhum erro registrado no sistema!</td></tr>';
+                    return;
+                }
+
+                erros.forEach(e => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${e.data}</td>
+                            <td><strong>${e.origem}</strong></td>
+                            <td style="color: var(--danger);">${e.mensagem}</td>
+                            <td style="font-family: monospace;">${e.detalhe}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Erro ao carregar erros", err);
+            }
+        }
+
+        async function cadastrar() {
+            const res = await fetch(`${API}/auth/registrar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nome: document.getElementById('regNome').value,
+                    email: document.getElementById('regEmail').value,
+                    senha: document.getElementById('regSenha').value
+                })
+            });
+            const data = await res.json();
+            alert(data.mensagem || data.erro);
+            if (res.ok) carregarUsuarios();
+        }
+
+        async function fazerLogin() {
+            const res = await fetch(`${API}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: document.getElementById('loginEmail').value,
+                    senha: document.getElementById('loginSenha').value
+                })
+            });
+            const data = await res.json();
+            alert(data.mensagem || data.erro);
+        }
+
+        carregarUsuarios();
+    </script>
+</body>
+</html>
