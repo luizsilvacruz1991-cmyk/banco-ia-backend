@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco IA - App Cliente</title>
+    <style>
+        :root {
+            --bg-color: #090d16;
+            --card-bg: #151c2c;
+            --accent: #3b82f6;
+            --text: #ffffff;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 380px;
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1e293b;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .app-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .app-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #0b0f19;
+            border: 1px solid #334155;
+            color: #fff;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .toggle-text {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 16px;
+            cursor: pointer;
+        }
+
+        .toggle-text span {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .dashboard-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .balance-title { font-size: 12px; opacity: 0.8; }
+        .balance-amount { font-size: 28px; font-weight: bold; margin-top: 6px; }
+
+        .btn-logout {
+            background: #dc2626;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        <div id="auth-screen">
+            <div class="app-header">
+                <div class="app-title">🏦 BANCO IA</div>
+                <div class="app-subtitle" id="form-subtitle">Acesse sua conta para continuar</div>
+            </div>
+
+            <div id="field-nome" class="input-group" style="display: none;">
+                <label>Nome Completo</label>
+                <input type="text" id="nome" placeholder="Digite seu nome">
+            </div>
+
+            <div class="input-group">
+                <label>E-mail</label>
+                <input type="email" id="email" placeholder="seuemail@gmail.com">
+            </div>
+
+            <div class="input-group">
+                <label>Senha</label>
+                <input type="password" id="senha" placeholder="••••••••">
+            </div>
+
+            <button class="btn" id="btn-submit" onclick="executarAcao()">Entrar no App</button>
+
+            <div class="toggle-text" id="toggle-btn" onclick="alternarModo()">
+                Não tem uma conta? <span>Cadastre-se</span>
+            </div>
+        </div>
+
+        <div id="dashboard-screen" class="dashboard-screen">
+            <div class="app-header">
+                <div class="app-title">Olá, <span id="user-display-name">Cliente</span>!</div>
+                <div class="app-subtitle">Conta Digital Ativa</div>
+            </div>
+
+            <div class="balance-card">
+                <div class="balance-title">Saldo Disponível</div>
+                <div class="balance-amount">R$ 1.250,00</div>
+            </div>
+
+            <button class="btn btn-logout" onclick="sair()">Sair da Conta</button>
+        </div>
+    </div>
+
+    <script>
+        const API = '/api';
+        let modoCadastro = false;
+
+        function alternarModo() {
+            modoCadastro = !modoCadastro;
+            document.getElementById('field-nome').style.display = modoCadastro ? 'block' : 'none';
+            document.getElementById('form-subtitle').innerText = modoCadastro ? 'Crie sua conta digital' : 'Acesse sua conta para continuar';
+            document.getElementById('btn-submit').innerText = modoCadastro ? 'Criar Conta' : 'Entrar no App';
+            document.getElementById('toggle-btn').innerHTML = modoCadastro 
+                ? 'Já tem uma conta? <span>Fazer Login</span>' 
+                : 'Não tem uma conta? <span>Cadastre-se</span>';
+        }
+
+        async function executarAcao() {
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            const nome = document.getElementById('nome').value;
+
+            if (!email || !senha || (modoCadastro && !nome)) {
+                alert('Preencha todos os campos!');
+                return;
+            }
+
+            const rota = modoCadastro ? '/auth/registrar' : '/auth/login';
+            const payload = modoCadastro ? { nome, email, senha } : { email, senha };
+
+            try {
+                const res = await fetch(`${API}${rota}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(`⚠️ ${data.erro}`);
+                    return;
+                }
+
+                if (modoCadastro) {
+                    alert('🎉 Cadastro realizado! Aguarde a liberação do Administrador.');
+                    alternarModo();
+                } else {
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('dashboard-screen').style.display = 'block';
+                    document.getElementById('user-display-name').innerText = email.split('@')[0];
+                }
+            } catch (err) {
+                alert('Erro de conexão com o servidor do Banco.');
+            }
+        }
+
+        function sair() {
+            document.getElementById('auth-screen').style.display = 'block';
+            document.getElementById('dashboard-screen').style.display = 'none';
+            document.getElementById('email').value = '';
+            document.getElementById('senha').value = '';
+        }
+    </script>
+</body>
+</html>
